@@ -99,6 +99,13 @@ int main(void)
 
   // the max is 88.49 at index 5
   float array[10] = {48.21, 79.48, 24.27, 28.82, 78.24, 88.49, 31.19, 5.52, 82.70, 77.73};
+  float array2[10] = {48.21, 79.48, 24.27, 28.82, 78.24, 88.49, 31.19, 5.52, 82.70, 77.73};
+
+  uint32_t arrSize = sizeof(array)/sizeof(array[0]);
+  float multRes[arrSize];
+  float multResC[arrSize];
+  float multResAsm[arrSize];
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -108,16 +115,33 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	// max val of array
+	//-------------------------------------------------------------------------
 	ITM_Port32(31) = 1;
 	for (uint32_t i=0; i<1000; i++)
-	  cMax(&array, 10, &maxC, &maxIndexC);
+	  cMax(array, arrSize, &maxC, &maxIndexC); // C
 	ITM_Port32(31) = 2;
 	for (uint32_t i=0; i<1000; i++)
-	  asmMax(&array, 10, &maxAsm, &maxIndexAsm);
+	  asmMax(array, arrSize, &maxAsm, &maxIndexAsm); // Assembly
 	ITM_Port32(31) = 3;
 	for (uint32_t i=0; i<1000; i++)
-	  arm_max_f32(&array, 10, &maxCMSIS, &maxIndexCMSIS);
+	  arm_max_f32(array, arrSize, &maxCMSIS, &maxIndexCMSIS); //CMSIS
 	ITM_Port32(31) = 4;
+
+	// element-wise 1d matrix multiplication
+	//-------------------------------------------------------------------------
+	for (uint32_t i=0; i<1000; i++)
+   	  cMult(array, array, multResC, arrSize); //C
+	ITM_Port32(31) = 5;
+	for (uint32_t i=0; i<1000; i++)
+	  asmMult(array, array2, multResAsm, arrSize); // Assembly
+
+	ITM_Port32(31) = 6;
+	for (uint32_t i=0; i<1000; i++)
+	  arm_mult_f32(array, array, multRes, arrSize); //CMSIS
+	ITM_Port32(31) = 7;
+
   }
   /* USER CODE END 3 */
 }

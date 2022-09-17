@@ -5,12 +5,16 @@
  *      Author: yazdan
  */
 
-#include "main.h"
 #ifndef INC_LAB1MATH_H_
 #define INC_LAB1MATH_H_
 
+#include "main.h"
+
 void cMax(float *array, uint32_t size, float *max, uint32_t *maxIndex);
 extern void asmMax(float *array, uint32_t size, float *max, uint32_t *maxIndex);
+
+void cMult(float *arr1, float *arr2, float *res, uint32_t len);
+extern void asmMult(float *arr1, float *arr2, float *res, uint32_t len);
 
 
 

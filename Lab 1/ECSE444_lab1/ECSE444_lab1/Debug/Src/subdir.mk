@@ -5,10 +5,12 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 S_SRCS += \
-../Src/asmax.s 
+../Src/asmmax.s \
+../Src/asmmult.s 
 
 C_SRCS += \
 ../Src/cmax.c \
+../Src/cmult.c \
 ../Src/main.c \
 ../Src/stm32l4xx_hal_msp.c \
 ../Src/stm32l4xx_it.c \
@@ -17,8 +19,10 @@ C_SRCS += \
 ../Src/system_stm32l4xx.c 
 
 OBJS += \
-./Src/asmax.o \
+./Src/asmmax.o \
+./Src/asmmult.o \
 ./Src/cmax.o \
+./Src/cmult.o \
 ./Src/main.o \
 ./Src/stm32l4xx_hal_msp.o \
 ./Src/stm32l4xx_it.o \
@@ -27,10 +31,12 @@ OBJS += \
 ./Src/system_stm32l4xx.o 
 
 S_DEPS += \
-./Src/asmax.d 
+./Src/asmmax.d \
+./Src/asmmult.d 
 
 C_DEPS += \
 ./Src/cmax.d \
+./Src/cmult.d \
 ./Src/main.d \
 ./Src/stm32l4xx_hal_msp.d \
 ./Src/stm32l4xx_it.d \
@@ -48,7 +54,7 @@ Src/%.o Src/%.su: ../Src/%.c Src/subdir.mk
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/asmax.d ./Src/asmax.o ./Src/cmax.d ./Src/cmax.o ./Src/cmax.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/stm32l4xx_hal_msp.d ./Src/stm32l4xx_hal_msp.o ./Src/stm32l4xx_hal_msp.su ./Src/stm32l4xx_it.d ./Src/stm32l4xx_it.o ./Src/stm32l4xx_it.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/system_stm32l4xx.d ./Src/system_stm32l4xx.o ./Src/system_stm32l4xx.su
+	-$(RM) ./Src/asmmax.d ./Src/asmmax.o ./Src/asmmult.d ./Src/asmmult.o ./Src/cmax.d ./Src/cmax.o ./Src/cmax.su ./Src/cmult.d ./Src/cmult.o ./Src/cmult.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/stm32l4xx_hal_msp.d ./Src/stm32l4xx_hal_msp.o ./Src/stm32l4xx_hal_msp.su ./Src/stm32l4xx_it.d ./Src/stm32l4xx_it.o ./Src/stm32l4xx_it.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/system_stm32l4xx.d ./Src/system_stm32l4xx.o ./Src/system_stm32l4xx.su
 
 .PHONY: clean-Src
 
