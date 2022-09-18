@@ -97,6 +97,10 @@ int main(void)
   float maxCMSIS = 0;
   uint32_t maxIndexCMSIS;
 
+  float stdC = 0;
+  float stdAsm = 0;
+  float stdCMSIS = 0;
+
   // the max is 88.49 at index 5
   float array[10] = {48.21, 79.48, 24.27, 28.82, 78.24, 88.49, 31.19, 5.52, 82.70, 77.73};
   float array2[10] = {48.21, 79.48, 24.27, 28.82, 78.24, 88.49, 31.19, 5.52, 82.70, 77.73};
@@ -136,11 +140,23 @@ int main(void)
 	ITM_Port32(31) = 5;
 	for (uint32_t i=0; i<1000; i++)
 	  asmMult(array, array2, multResAsm, arrSize); // Assembly
-
 	ITM_Port32(31) = 6;
 	for (uint32_t i=0; i<1000; i++)
 	  arm_mult_f32(array, array, multRes, arrSize); //CMSIS
 	ITM_Port32(31) = 7;
+
+	// Standard deviation
+	//-------------------------------------------------------------------------
+	for (uint32_t i=0; i<1000; i++)
+	  cStd(array, arrSize, &stdC); //C
+	ITM_Port32(31) = 8;
+	for (uint32_t i=0; i<1000; i++)
+	  asmStd(array, arrSize, &stdAsm); //Assembly
+	ITM_Port32(31) = 9;
+	for (uint32_t i=0; i<1000; i++)
+	  arm_std_f32(array, arrSize, &stdCMSIS); //CMSIS
+	ITM_Port32(31) = 10;
+
 
   }
   /* USER CODE END 3 */
