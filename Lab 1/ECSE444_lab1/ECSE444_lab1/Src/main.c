@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -102,8 +104,15 @@ int main(void)
   float stdCMSIS = 0;
 
   // the max is 88.49 at index 5
-  float array[10] = {48.21, 79.48, 24.27, 28.82, 78.24, 88.49, 31.19, 5.52, 82.70, 77.73};
-  float array2[10] = {48.21, 79.48, 24.27, 28.82, 78.24, 88.49, 31.19, 5.52, 82.70, 77.73};
+  float array[10] = {10, 12, 23, 23, 16, 23, 21, 16, 80, 77};
+//  float array2[10] = {48.21, 79.48, 24.27, 28.82, 78.24, 88.49, 31.19, 5.52, 82.70, 77.73};
+
+//  float array[1000];
+//  srand(0);
+//  for (int i = 0; i < 1000; i++) {
+//	  array[i] = (float)rand()/(float)(RAND_MAX/1000.0);
+//  }
+
 
   uint32_t arrSize = sizeof(array)/sizeof(array[0]);
   float multRes[arrSize];
@@ -139,7 +148,7 @@ int main(void)
    	  cMult(array, array, multResC, arrSize); //C
 	ITM_Port32(31) = 5;
 	for (uint32_t i=0; i<1000; i++)
-	  asmMult(array, array2, multResAsm, arrSize); // Assembly
+	  asmMult(array, array, multResAsm, arrSize); // Assembly
 	ITM_Port32(31) = 6;
 	for (uint32_t i=0; i<1000; i++)
 	  arm_mult_f32(array, array, multRes, arrSize); //CMSIS
@@ -156,6 +165,7 @@ int main(void)
 	for (uint32_t i=0; i<1000; i++)
 	  arm_std_f32(array, arrSize, &stdCMSIS); //CMSIS
 	ITM_Port32(31) = 10;
+	ITM_Port32(31) = 11;
 
 
   }
