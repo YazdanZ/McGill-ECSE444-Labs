@@ -1,22 +1,21 @@
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
-///* USER CODE BEGIN Header */
-///**
-//  ******************************************************************************
-//  * @file           : main.c
-//  * @brief          : Main program body
-//  ******************************************************************************
-//  * @attention
-//  *
-//  * Copyright (c) 2022 STMicroelectronics.
-//  * All rights reserved.
-//  *
-//  * This software is licensed under terms that can be found in the LICENSE file
-//  * in the root directory of this software component.
-//  * If no LICENSE file comes with this software, it is provided AS-IS.
-//  *
-//  ******************************************************************************
-//  */
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * All rights reserved.</center></h2>
+  *
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
+  *
+  ******************************************************************************
+  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -26,10 +25,7 @@
 #define ARM_MATH_CM4
 #include "arm_math.h"
 
-// for tracing SWV data trace timeline graph
-uint32_t sawtoothA;
-uint32_t triangleA;
-uint32_t sineA;
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,6 +59,11 @@ static void MX_DAC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// for tracing SWV data trace timeline graph
+uint32_t sawtoothA;
+uint32_t sineA;
+uint32_t triangleA;
+
 uint32_t triangle[16];
 uint32_t sawtooth[16];
 uint32_t sine[16];
@@ -86,11 +87,12 @@ void initSignals() {
 		 triangle[j] = 4095;
 	  else
 		triangle[j] = 4096 + (16/2 - j) * 512;
-//	  float r = 0.0174533 * (360 / 8);
+
 	  float r = 3.14 * j / 8.0;
 	  sine[j] = (uint32_t) roundf(2047.0 * (1.0 + arm_sin_f32(r)));
   }
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -122,39 +124,39 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DAC1_Init();
-
   /* USER CODE BEGIN 2 */
+
+  HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
+  HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
   initSignals();
+
+
+//  // used for indexing into the waves
+  uint32_t t = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint32_t t = 0; // timepoint for the wave
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	checkLED();
-
-
+	// set the DAC values, then update index
+	sineA = sine[t];
+	triangleA = triangle[t];
 	sawtoothA = sawtooth[t];
+
+
+	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, triangleA);
+//	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sineA);
 	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sawtoothA);
 
-	triangleA = triangle[t];
-//	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, triangleA);
-
-//    if (t < 16)
-//      t += 1;
-//    else
-//      t = 0;
-
-     sineA = sine[t];
 	t = (t + 1) % 16;
-//	 HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, sineA);
 
-	 // delay
-	 HAL_Delay(0.5);
+	checkLED();
+	HAL_Delay(0.5);
   }
   /* USER CODE END 3 */
 }
@@ -167,13 +169,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-
-  /** Configure the main internal regulator output voltage
-  */
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -193,7 +188,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -204,6 +198,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure the main internal regulator output voltage
+  */
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -226,7 +226,6 @@ static void MX_DAC1_Init(void)
   /* USER CODE BEGIN DAC1_Init 1 */
 
   /* USER CODE END DAC1_Init 1 */
-
   /** DAC Initialization
   */
   hdac1.Instance = DAC1;
@@ -234,7 +233,6 @@ static void MX_DAC1_Init(void)
   {
     Error_Handler();
   }
-
   /** DAC channel OUT1 config
   */
   sConfig.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE;
@@ -246,9 +244,9 @@ static void MX_DAC1_Init(void)
   {
     Error_Handler();
   }
-
   /** DAC channel OUT2 config
   */
+  sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_DISABLE;
   if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
@@ -276,7 +274,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PUSHBUTTON_Pin */
+  /*Configure GPIO pin : BUTTON_Pin */
   GPIO_InitStruct.Pin = PUSHBUTTON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -303,10 +301,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -322,7 +317,9 @@ void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
