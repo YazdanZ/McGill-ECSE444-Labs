@@ -71,32 +71,32 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-//	// no need to verify the pin since there are no external interrupts
-//
-//	// change audio signal on pushbutton press
-//	HAL_DAC_Stop_DMA(&hdac1, DAC_CHANNEL_1);
-//	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, signals[signalIndex], signalsizes[signalIndex], DAC_ALIGN_12B_R);
-//	signalIndex = (signalIndex + 1) % 4; // update next signal index
-//
-//
-//	// toggle LED on PUSHBUTTON push
-//	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-//}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	// no need to verify the pin since there are no external interrupts
+
+	// change audio signal on pushbutton press
+	HAL_DAC_Stop_DMA(&hdac1, DAC_CHANNEL_1);
+	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, signals[signalIndex], signalsizes[signalIndex], DAC_ALIGN_12B_R);
+	signalIndex = (signalIndex + 1) % 4; // update next signal index
+
+
+	// toggle LED on PUSHBUTTON push
+	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+}
 
 // called by TIM interrupt handler
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    // we should probably check the timer causing the interrupt but YOLO...
-//	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine2[signalIndex]);
-//	signalIndex = (signalIndex + 1) % 40;
-
-	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine1[signalIndex]);
-	wave = sine1[signalIndex];
-	signalIndex = (signalIndex + 1) % 80;
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+//    // we should probably check the timer causing the interrupt but YOLO...
+////	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine2[signalIndex]);
+////	signalIndex = (signalIndex + 1) % 40;
 //
-//	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine4[signalIndex]);
-//	signalIndex = (signalIndex + 1) % 20;
-}
+//	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine1[signalIndex]);
+//	wave = sine1[signalIndex];
+//	signalIndex = (signalIndex + 1) % 80;
+////
+////	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine4[signalIndex]);
+////	signalIndex = (signalIndex + 1) % 20;
+//}
 
 
 void initSignals() {
