@@ -50,21 +50,10 @@ DMA_HandleTypeDef hdma_dfsdm1_flt0;
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
-uint32_t sine4[20]; // 4KHz
-uint32_t sine2[40]; // 2KHz
-uint32_t sine3[60]; // 1.5KHz
-uint32_t sine1[80]; // 1KHz
-uint32_t signalno = 0;
-uint32_t *signals[4]; // pointer to 3 sine waves
-uint32_t signalsizes[4] = {80, 40, 20, 60}; // array sizes for each signal to be used in DMA
-uint32_t signalIndex = 0;
 
-// for debugging using SWV
-uint32_t wave;
-
-uint32_t bufferSize = 8000;
-int32_t buffer[8000];
-uint16_t dacin[8000];
+uint32_t bufferSize = 12000;
+int32_t buffer[12000];
+uint32_t dacin[12000];
 
 /* USER CODE END PV */
 
@@ -96,9 +85,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 //	HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, buffer, bufferSize);
 	HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, &buffer, bufferSize);
 
-//	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, signals[signalIndex], signalsizes[signalIndex], DAC_ALIGN_12B_R);
-//	signalIndex = (signalIndex + 1) % 4; // update next signal index
-
 
 	// toggle LED on PUSHBUTTON push
 	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
@@ -108,62 +94,12 @@ void HAL_DFSDM_FilterRegConvCpltCallback (DFSDM_Filter_HandleTypeDef * hdfsdm_fi
 	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 
 	for(int i = 0; i < bufferSize; i++) {
-//		dacin[i] = (uint16_t) ((int16_t)(buffer[i] >> 8) + 2048);
-		int32_t temp = buffer[i] >> 8;
-		temp = (temp / 256) + 32768;
-//		temp += 32768;
-		dacin[i] = (uint16_t) temp;
-
+		uint32_t temp = ((buffer[i] >> 8) + 8388608)/256;
+		dacin[i] = temp;
+//
 	}
 //	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, sine2, 40, DAC_ALIGN_12B_R);
 	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, &dacin, bufferSize, DAC_ALIGN_12B_R);
-}
-
-
-// called by TIM interrupt handler
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-//    // we should probably check the timer causing the interrupt but YOLO...
-////	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine2[signalIndex]);
-////	signalIndex = (signalIndex + 1) % 40;
-//
-////	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine1[signalIndex]);
-////	wave = sine1[signalIndex];
-////	signalIndex = (signalIndex + 1) % 80;
-////
-////	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine4[signalIndex]);
-////	signalIndex = (signalIndex + 1) % 20;
-//}
-
-
-void initSignals() {
-	// 2047 * 2/3 = 1364.66 ~ 1365
-	// we scale DAC values to vary over 2/3 of possible dynamic range
-	  for (uint32_t i = 0; i < 20; i++) {
-		  float r = 3.14 * i / 10.0;
-		  sine4[i] = (uint32_t) roundf(1365.0 * (1.0 + arm_sin_f32(r)));
-
-	  }
-
-	  for (uint32_t i = 0; i < 40; i++) {
-		  float r = 3.14 * i / 20.0;
-		  sine2[i] = (uint32_t) roundf(1365.0 * (1.0 + arm_sin_f32(r)));
-	  }
-
-	  for (uint32_t i = 0; i < 80; i++) {
-		  float r = 3.14 * i / 40.0;
-		  sine1[i] = (uint32_t) roundf(1365.0 * (1.0 + arm_sin_f32(r)));
-	  }
-
-	  for (uint32_t i = 0; i < 60; i++) {
-	  	  float r = 3.14 * i / 30.0;
-	  	  sine3[i] = (uint32_t) roundf(1365.0 * (1.0 + arm_sin_f32(r)));
-	  }
-	  signals[0] = sine1;
-	  signals[1] = sine2;
-	  signals[2] = sine4;
-	  signals[3] = sine3;
-
-
 }
 
 /* USER CODE END 0 */
@@ -208,9 +144,7 @@ int main(void)
   HAL_DMA_Init(&hdma_dfsdm1_flt0);
 //  HAL_DMA_Init(&htim2);
   HAL_DAC_Start(&hdac1, DAC_CHANNEL_1); // start DAC
-//  HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, sine2, 40, DAC_ALIGN_12B_R);
 
-  initSignals();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -337,7 +271,7 @@ static void MX_DFSDM1_Init(void)
   hdfsdm1_filter0.Init.RegularParam.FastMode = ENABLE;
   hdfsdm1_filter0.Init.RegularParam.DmaMode = ENABLE;
   hdfsdm1_filter0.Init.FilterParam.SincOrder = DFSDM_FILTER_SINC3_ORDER;
-  hdfsdm1_filter0.Init.FilterParam.Oversampling = 312;
+  hdfsdm1_filter0.Init.FilterParam.Oversampling = 208;
   hdfsdm1_filter0.Init.FilterParam.IntOversampling = 1;
   if (HAL_DFSDM_FilterInit(&hdfsdm1_filter0) != HAL_OK)
   {
@@ -391,7 +325,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 10000;
+  htim2.Init.Period = 6667;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
