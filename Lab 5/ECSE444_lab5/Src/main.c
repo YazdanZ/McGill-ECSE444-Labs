@@ -83,7 +83,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	}
 
 //	HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, buffer, bufferSize);
-	HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, &buffer, bufferSize);
+	HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0, buffer, bufferSize);
 
 
 	// toggle LED on PUSHBUTTON push
@@ -94,13 +94,35 @@ void HAL_DFSDM_FilterRegConvCpltCallback (DFSDM_Filter_HandleTypeDef * hdfsdm_fi
 	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 
 	for(int i = 0; i < bufferSize; i++) {
-		uint32_t temp = ((buffer[i] >> 8) + 8388608)/256;
-		dacin[i] = temp;
-//
+//		uint32_t temp = ((buffer[i] >> 8))/256;//
+//		dacin[i] = temp;
+
+//		int32_t temp = buffer[i] >> 8;
+//		int32_t y = temp + 2048;
+//		uint32_t convert = (uint32_t) y;
+//		dacin[i] =  (uint16_t) convert;
+
+
+		//		int32_t value=buffer[i]>>8;
+//		int32_t y = value + 2048;
+//		uint32_t convert = (uint32_t)y;
+//		dacin[i] = ((uint16_t)convert);
+
+//		int32_t value=recording[i]>>12;
+//		int32_t y = value + 2048;
+//		uint32_t convert = (uint32_t)y;
+//		speaker[i] = ((uint16_t)convert);
+
+
+
+//		dacin[i] = (uint32_t) ((int32_t) ((buffer[i] >> 8)) + 2048);
+		dacin[i] = (uint32_t) ((int32_t) ((buffer[i] >> 8)) + 2048);
+
 	}
 //	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, sine2, 40, DAC_ALIGN_12B_R);
-	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, &dacin, bufferSize, DAC_ALIGN_12B_R);
+	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, dacin, bufferSize, DAC_ALIGN_12B_R);
 }
+
 
 /* USER CODE END 0 */
 
@@ -270,8 +292,8 @@ static void MX_DFSDM1_Init(void)
   hdfsdm1_filter0.Init.RegularParam.Trigger = DFSDM_FILTER_SW_TRIGGER;
   hdfsdm1_filter0.Init.RegularParam.FastMode = ENABLE;
   hdfsdm1_filter0.Init.RegularParam.DmaMode = ENABLE;
-  hdfsdm1_filter0.Init.FilterParam.SincOrder = DFSDM_FILTER_SINC3_ORDER;
-  hdfsdm1_filter0.Init.FilterParam.Oversampling = 208;
+  hdfsdm1_filter0.Init.FilterParam.SincOrder = DFSDM_FILTER_FASTSINC_ORDER;
+  hdfsdm1_filter0.Init.FilterParam.Oversampling = 100;
   hdfsdm1_filter0.Init.FilterParam.IntOversampling = 1;
   if (HAL_DFSDM_FilterInit(&hdfsdm1_filter0) != HAL_OK)
   {
@@ -325,7 +347,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 6667;
+  htim2.Init.Period = 3200;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -348,7 +370,6 @@ static void MX_TIM2_Init(void)
   /* USER CODE END TIM2_Init 2 */
 
 }
-
 /**
   * Enable DMA controller clock
   */
